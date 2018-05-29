@@ -9,8 +9,11 @@ public class Advertisement {
     @Expose
     public Service services;
 
-    public Advertisement(String ip, Service services){
+    @Expose int port;
+
+    public Advertisement(String ip, Service services, int port){
         this.ip = ip;
         this.services = services;
+        this.port = port;
     }
 }

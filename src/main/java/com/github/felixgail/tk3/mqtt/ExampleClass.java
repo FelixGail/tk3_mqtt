@@ -19,7 +19,7 @@ public class ExampleClass {
       List<Actuator> actuators = new ArrayList<Actuator>();
       actuators.add(act);
       Service serv = new Service(sensors, actuators);
-      Advertisement test = new Advertisement("bla", serv);
+      Advertisement test = new Advertisement("bla", serv, 25);
       String json = gson.toJson(test);
       System.out.println(json);
   }
