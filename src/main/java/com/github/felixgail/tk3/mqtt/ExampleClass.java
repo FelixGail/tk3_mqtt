@@ -12,16 +12,13 @@ public class ExampleClass {
   {
       // Test
       Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-      Actuator act = new Actuator("bla", "bla", "bla");
-      Sensor sens = new Sensor("bla", "bla", "bla");
-      List<Sensor> sensors = new ArrayList<Sensor>();
-      sensors.add(sens);
-      List<Actuator> actuators = new ArrayList<Actuator>();
-      actuators.add(act);
-      Service serv = new Service(sensors, actuators);
-      Advertisement test = new Advertisement("bla", serv, 25);
-      String json = gson.toJson(test);
-      System.out.println(json);
+      Service serv1 = new Service("hall_sensor", "7644a627-1b4e-47d0-b8bc-6a01813e99f6", "ch1");
+      Service serv2 = new Service("led", "7644a627-1b4e-l3d0-b8bc-6a01813e99f9", "response_channel1");
+      List<Service> services = new ArrayList<>();
+      services.add(serv1);
+      services.add(serv2);
+      Advertisement test = new Advertisement("bla", services, 25);
+      System.out.println(test.toString());
   }
 
 }

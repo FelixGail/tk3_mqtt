@@ -37,9 +37,7 @@ public class MulticastClient {
                 Advertisement adv = dumpPacket(packet);
 
                 // send
-                List<Sensor> sensors = new ArrayList<>(cm.sensors);
-                List<Actuator> actuators = new ArrayList<>(cm.actuators);
-                Advertisement response = new Advertisement(IP_ADDRESS, new Service(sensors, actuators), PORT);
+                Advertisement response = new Advertisement(IP_ADDRESS, cm.getChannelList(), PORT);
                 sendPackage(response, InetAddress.getByName(adv.ip), adv.port);
 
                 // add received channels to channel list
@@ -65,7 +63,7 @@ public class MulticastClient {
         return packet;
     }
 
-    public void sendPackage(Advertisement adv, InetAddress ip, int port) throws IOException{
+    private void sendPackage(Advertisement adv, InetAddress ip, int port) throws IOException{
         String dataString = gson.toJson(adv);
         byte[] buf = dataString.getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, ip, port);

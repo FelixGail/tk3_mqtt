@@ -7,32 +7,34 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 public class ChannelManager {
-    public Set<Sensor> sensors = new HashSet<>();
-    public Set<Actuator> actuators = new HashSet<>();
-    public Set<Advertisement> ads = new HashSet<>();
+    private Set<Service> services = new HashSet<>();
+    private Set<Advertisement> ads = new HashSet<>();
 
     public void addToChannelList(Advertisement adv){
-        List<Sensor> espSensors = adv.services.sensors;
-        List<Actuator> espActuators = adv.services.actuators;
+        List<Service> espServices = adv.services;
         ads.add(adv);
+        services.addAll(espServices);
+    }
 
-        sensors.addAll(espSensors);
-        actuators.addAll(espActuators);
+    public List<Service> getChannelList(){
+        return new ArrayList<>(services);
     }
 
     public void updateChannelList() throws IOException {
         Iterator it = ads.iterator();
         while (it.hasNext()) {
             Advertisement adv = (Advertisement) it.next();
+
+            // checks if ip is reachable
             Socket socket = new Socket(adv.ip, adv.port);
             socket.getOutputStream().write((byte) '\n');
             int ch = socket.getInputStream().read();
             socket.close();
-            if (ch != '\n') {
-                sensors.remove(adv.services.sensors);
-                actuators.remove(adv.services.actuators);
-                it.remove();
-            }
+            if (ch == 'n')
+                continue;
+
+            services.removeAll(adv.services);
+            it.remove();
         }
 
     }
