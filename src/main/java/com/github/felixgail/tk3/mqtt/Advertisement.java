@@ -14,17 +14,11 @@ public class Advertisement {
     @Expose
     public List<Service> services;
     @Expose int port;
-    private Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
     public Advertisement(String ip, List<Service> services, int port){
         this.ip = ip;
         this.services = services;
         this.port = port;
-    }
-
-    @Override
-    public String toString(){
-        return gson.toJson(this);
     }
 
     @Override

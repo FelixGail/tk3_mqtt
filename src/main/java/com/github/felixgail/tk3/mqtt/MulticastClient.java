@@ -53,6 +53,7 @@ public class MulticastClient {
     private Advertisement dumpPacket(DatagramPacket packet){
         String received = new String(
                 packet.getData(), 0, packet.getLength());
+        System.out.printf("Paket received: %s", received);
         return gson.fromJson(received, Advertisement.class);
     }
 
