@@ -7,6 +7,15 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 public class ChannelManager {
+
+    public Set<Service> getServices() {
+        return services;
+    }
+
+    public Set<Advertisement> getAds() {
+        return ads;
+    }
+
     private Set<Service> services = new HashSet<>();
     private Set<Advertisement> ads = new HashSet<>();
 

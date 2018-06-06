@@ -65,6 +65,9 @@ public class MulticastClient {
                     // send
                     Advertisement response = new Advertisement(IP_ADDRESS, cm.getChannelList(), PORT);
                     sendPackage(response, InetAddress.getByName(adv.getIp()), adv.getPort());
+                    for(Advertisement client : cm.getAds()) {
+                        sendPackage(response, InetAddress.getByName(client.getIp()), client.getPort());
+                    }
 
                     // add received channels to channel list
                     cm.addToChannelList(adv);
