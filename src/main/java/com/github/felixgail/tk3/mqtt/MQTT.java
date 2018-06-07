@@ -2,6 +2,7 @@ package com.github.felixgail.tk3.mqtt;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -49,9 +50,9 @@ public class MQTT {
         .addOption(networkInterface).addOption(mqttPort);
     CommandLineParser parser = new DefaultParser();
     CommandLine line = parser.parse(options, args);
-    if(line.hasOption("h")) {
+    if (line.hasOption("h")) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp( "mqtt", options );
+      formatter.printHelp("mqtt", options);
       System.exit(0);
     }
 
