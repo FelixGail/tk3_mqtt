@@ -10,9 +10,9 @@ public class Advertisement {
     @Expose
     private String ip;
     @Expose
-    private List<Service> services;
-    @Expose
     private int port;
+    @Expose
+    private List<Service> services;
 
     public Advertisement(String ip, List<Service> services, int port){
         this.ip = ip;

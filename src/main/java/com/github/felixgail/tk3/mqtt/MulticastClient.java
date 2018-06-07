@@ -3,33 +3,45 @@ package com.github.felixgail.tk3.mqtt;
 import com.google.gson.*;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.StandardProtocolFamily;
 import java.net.StandardSocketOptions;
+import java.net.UnknownHostException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.MembershipKey;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 
 public class MulticastClient {
 
+    public final int MQTT_PORT;
     public final String INTERFACE;
     public final String IP_ADDRESS;
     public final int PORT;
+    public final String LOCAL_IP;
     private DatagramChannel dc;
     private MembershipKey key;
     private Gson gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
     private ChannelManager cm = new ChannelManager();
-    private ByteBuffer byteBuffer = ByteBuffer.allocate(1500);
+    private ByteBuffer byteBufferReceive = ByteBuffer.allocate(5000);
+    private ByteBuffer byteBufferSend = ByteBuffer.allocate(5000);
 
-    public MulticastClient(String ip_address, int port, String networkInterface){
+    public MulticastClient(String ip_address, int port, String networkInterface, int mqttPort)
+        throws SocketException, UnknownHostException {
         this.IP_ADDRESS = ip_address;
         this.PORT = port;
         this.INTERFACE = networkInterface;
+        this.MQTT_PORT = mqttPort;
+        // send
+        final DatagramSocket socket = new DatagramSocket();
+        socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+        LOCAL_IP = socket.getLocalAddress().getHostAddress();
     }
 
     public void run(){
@@ -62,11 +74,14 @@ public class MulticastClient {
                 if(packet!=null && !packet.isEmpty()){
                     Advertisement adv = gson.fromJson(packet, Advertisement.class);
 
-                    // send
-                    Advertisement response = new Advertisement(IP_ADDRESS, cm.getChannelList(), PORT);
+                    Advertisement response = new Advertisement(LOCAL_IP, new ArrayList<>(cm.getServices()), MQTT_PORT);
                     sendPackage(response, InetAddress.getByName(adv.getIp()), adv.getPort());
-                    for(Advertisement client : cm.getAds()) {
-                        sendPackage(response, InetAddress.getByName(client.getIp()), client.getPort());
+                    for(Entry<String, Advertisement> entry : cm.getAds().entrySet()) {
+                        if(!entry.getKey().equals(adv.getIp())) {
+                            Advertisement client = entry.getValue();
+                            System.out.printf("Will send to %s: %s\n", client.getIp(), gson.toJson(adv));
+                            sendPackage(response, InetAddress.getByName(client.getIp()), client.getPort());
+                        }
                     }
 
                     // add received channels to channel list
@@ -81,9 +96,9 @@ public class MulticastClient {
 
     private String receivePackage() throws IOException{
         if(key.isValid()){
-            ((Buffer)byteBuffer).rewind();
-            InetSocketAddress sa = (InetSocketAddress) dc.receive(byteBuffer);
-            String msg = new String(byteBuffer.array(), 0, byteBuffer.position());
+            ((Buffer) byteBufferReceive).rewind();
+            InetSocketAddress sa = (InetSocketAddress) dc.receive(byteBufferReceive);
+            String msg = new String(byteBufferReceive.array(), 0, byteBufferReceive.position());
             System.out.println("Multicast received from " + sa.getHostString() + ": " +msg);
             return msg;
         }else {
@@ -94,11 +109,11 @@ public class MulticastClient {
 
     private void sendPackage(Advertisement adv, InetAddress ip, int port) throws IOException{
         String dataString = gson.toJson(adv);
-        byte[] buf = dataString.getBytes();
-        ((Buffer)byteBuffer).clear();
-        byteBuffer.put(buf);
+        ((Buffer) byteBufferSend).clear();
+        byteBufferSend.put(dataString.getBytes());
+        ((Buffer) byteBufferSend).flip();
         System.out.printf("Sending packet to '%s:%d': %s\n", ip, port, dataString);
-        dc.send(byteBuffer, new InetSocketAddress(ip, port));
+        dc.send(byteBufferSend, new InetSocketAddress(ip, port));
     }
 
 }
