@@ -9,7 +9,7 @@ public class ChannelManager {
 
     public Set<Service> getServices() {
         Set<Service> services = new HashSet<>();
-        getAds().forEach((key, value) -> services.addAll(value.getServices()));
+        getAds().forEach((key, value) -> value.getServiceOptional().ifPresent(services::addAll));
         return services;
     }
 

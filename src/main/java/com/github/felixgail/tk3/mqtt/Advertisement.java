@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Advertisement {
 
@@ -47,5 +48,13 @@ public class Advertisement {
 
     public int getPort() {
         return port;
+    }
+
+    public boolean hasServices() {
+        return services != null;
+    }
+
+    public Optional<List<Service>> getServiceOptional() {
+        return Optional.ofNullable(services);
     }
 }
