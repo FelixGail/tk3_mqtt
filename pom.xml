@@ -11,7 +11,7 @@
   <url>https://github.com/felixgail/tk3_mqtt</url>
 
   <properties>
-    <main.class>com.github.felixgail.tk3.mqtt.ExampleClass</main.class>
+    <main.class>com.github.felixgail.tk3.mqtt.MQTT</main.class>
     <encoding>UTF-8</encoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
     <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
@@ -45,7 +45,15 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
+      <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.4</version>
+      <scope>compile</scope>
+    </dependency>
+
 
     <!--Add dependencies here-->
 

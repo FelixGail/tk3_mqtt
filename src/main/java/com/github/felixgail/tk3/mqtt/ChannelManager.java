@@ -2,40 +2,39 @@ package com.github.felixgail.tk3.mqtt;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.*;
 
 public class ChannelManager {
-    private Set<Service> services = new HashSet<>();
-    private Set<Advertisement> ads = new HashSet<>();
+    private Map<String, Advertisement> ads = new HashMap<>();
 
-    public void addToChannelList(Advertisement adv){
-        List<Service> espServices = adv.services;
-        ads.add(adv);
-        services.addAll(espServices);
+    public Set<Service> getServices() {
+        Set<Service> services = new HashSet<>();
+        getAds().forEach((key, value) -> value.getServiceOptional().ifPresent(services::addAll));
+        return services;
     }
 
-    public List<Service> getChannelList(){
-        return new ArrayList<>(services);
+    public Map<String, Advertisement> getAds() {
+        return ads;
+    }
+
+    public void addToChannelList(Advertisement adv){
+        List<Service> espServices = adv.getServices();
+        ads.put(adv.getIp(), adv);
     }
 
     public void updateChannelList() throws IOException {
-        Iterator it = ads.iterator();
+        Iterator it = ads.keySet().iterator();
+        System.out.println("Sending ping requests...");
         while (it.hasNext()) {
-            Advertisement adv = (Advertisement) it.next();
+            String ip = (String)it.next();
 
-            // checks if ip is reachable
-            Socket socket = new Socket(adv.ip, adv.port);
-            socket.getOutputStream().write((byte) '\n');
-            int ch = socket.getInputStream().read();
-            socket.close();
-            if (ch == 'n')
-                continue;
-
-            services.removeAll(adv.services);
-            it.remove();
+            InetAddress remote = InetAddress.getByName(ip);
+            if(!remote.isReachable(5000)) {
+                System.out.printf("Timeout. Removing '%s'\n", ip);
+                it.remove();
+            }else{
+                System.out.printf("Answer received from '%s'\n", ip);
+            }
         }
-
     }
 }
