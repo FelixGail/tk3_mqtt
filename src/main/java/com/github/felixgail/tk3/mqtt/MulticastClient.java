@@ -103,7 +103,6 @@ public class MulticastClient {
           for (Entry<String, Advertisement> entry : cm.getAds().entrySet()) {
             if (!entry.getKey().equals(adv.getIp())) {
               Advertisement client = entry.getValue();
-              System.out.printf("Will send to %s: %s\n", client.getIp(), gson.toJson(adv));
               sendPackage(response, InetAddress.getByName(client.getIp()), client.getPort());
             }
           }
