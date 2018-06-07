@@ -33,6 +33,12 @@ public class MQTT {
         .required(false)
         .longOpt("i")
         .build();
+    Option mqttIp = Option.builder().argName("l")
+        .hasArg()
+        .desc("mqtt ip to advertise")
+        .required(false)
+        .longOpt("l")
+        .build();
     Option mqttPort = Option.builder().argName("P")
         .hasArg()
         .desc("port of the mqtt server")
@@ -46,7 +52,7 @@ public class MQTT {
         .longOpt("h")
         .build();
     Options options = new Options().addOption(help)
-        .addOption(multicastAdress).addOption(multicastPort)
+        .addOption(multicastAdress).addOption(mqttIp).addOption(multicastPort)
         .addOption(networkInterface).addOption(mqttPort);
     CommandLineParser parser = new DefaultParser();
     CommandLine line = parser.parse(options, args);
@@ -60,10 +66,11 @@ public class MQTT {
         line.getOptionValue("m", "239.0.0.57"),
         Integer.parseInt(line.getOptionValue("p", "5000")),
         line.getOptionValue("i", "wlan0"),
-        Integer.parseInt(line.getOptionValue("P", "1883"))
+        Integer.parseInt(line.getOptionValue("P", "1883")),
+        line.getOptionValue("l", null)
     );
 
-    System.out.printf("Starting multicast client on %s:%d.\n", client.IP_ADDRESS, client.PORT);
+    System.out.printf("Starting multicast client on '%s:%d'.\n", client.IP_ADDRESS, client.PORT);
     client.run();
   }
 
