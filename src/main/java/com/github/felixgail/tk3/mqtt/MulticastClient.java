@@ -3,7 +3,6 @@ package com.github.felixgail.tk3.mqtt;
 import com.google.gson.*;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -16,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.MembershipKey;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Map.Entry;
 
 public class MulticastClient {
@@ -24,7 +24,7 @@ public class MulticastClient {
   public final String INTERFACE;
   public final String IP_ADDRESS;
   public final int PORT;
-  public final String LOCAL_IP;
+  private String MQTT_IP;
   private DatagramChannel dc;
   private MembershipKey key;
   private Gson gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
@@ -32,16 +32,18 @@ public class MulticastClient {
   private ByteBuffer byteBufferReceive = ByteBuffer.allocate(5000);
   private ByteBuffer byteBufferSend = ByteBuffer.allocate(5000);
 
-  public MulticastClient(String ip_address, int port, String networkInterface, int mqttPort)
+  public MulticastClient(String ip_address, int port, String networkInterface, int mqttPort,
+                         String mqttIp)
       throws SocketException, UnknownHostException {
     this.IP_ADDRESS = ip_address;
     this.PORT = port;
     this.INTERFACE = networkInterface;
     this.MQTT_PORT = mqttPort;
+    this.MQTT_IP = mqttIp;
     // send
-    final DatagramSocket socket = new DatagramSocket();
-    socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-    LOCAL_IP = socket.getLocalAddress().getHostAddress();
+    //final DatagramSocket socket = new DatagramSocket();
+    //socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+    //MQTT_IP = socket.getLocalAddress().getHostAddress();
   }
 
   public void run() {
@@ -56,6 +58,28 @@ public class MulticastClient {
       InetAddress group = InetAddress.getByName(IP_ADDRESS);
 
       key = dc.join(group, ni);
+
+      if(MQTT_IP == null) {
+        Enumeration enumeration = NetworkInterface.getNetworkInterfaces();
+        while(enumeration.hasMoreElements())
+        {
+          NetworkInterface n = (NetworkInterface) enumeration.nextElement();
+          Enumeration ee = n.getInetAddresses();
+          while (ee.hasMoreElements())
+          {
+            InetAddress i = (InetAddress) ee.nextElement();
+            if(i.isSiteLocalAddress()) {
+              MQTT_IP = i.getHostAddress();
+              break;
+            }
+          }
+          if(MQTT_IP == null) {
+            System.out.println("Unable to find site local ip address - exiting");
+            System.exit(1);
+          }
+        }
+      }
+      System.out.printf("Advertising MQTT server on '%s:%s'.\n", MQTT_IP, MQTT_PORT);
 
       new Thread(() -> {
         // check if there are unavailable devices and remove them
@@ -74,7 +98,7 @@ public class MulticastClient {
         if (packet != null && !packet.isEmpty()) {
           Advertisement adv = gson.fromJson(packet, Advertisement.class);
 
-          Advertisement response = new Advertisement(LOCAL_IP, new ArrayList<>(cm.getServices()), MQTT_PORT);
+          Advertisement response = new Advertisement(MQTT_IP, new ArrayList<>(cm.getServices()), MQTT_PORT);
           sendPackage(response, InetAddress.getByName(adv.getIp()), adv.getPort());
           for (Entry<String, Advertisement> entry : cm.getAds().entrySet()) {
             if (!entry.getKey().equals(adv.getIp())) {
