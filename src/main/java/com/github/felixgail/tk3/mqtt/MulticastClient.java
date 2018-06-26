@@ -24,6 +24,7 @@ public class MulticastClient {
   public final String INTERFACE;
   public final String IP_ADDRESS;
   public final int PORT;
+  public final int TEAMCOUNT;
   private String MQTT_IP;
   private DatagramChannel dc;
   private MembershipKey key;
@@ -33,13 +34,14 @@ public class MulticastClient {
   private ByteBuffer byteBufferSend = ByteBuffer.allocate(5000);
 
   public MulticastClient(String ip_address, int port, String networkInterface, int mqttPort,
-                         String mqttIp)
+                         String mqttIp, int teamcount)
       throws SocketException, UnknownHostException {
     this.IP_ADDRESS = ip_address;
     this.PORT = port;
     this.INTERFACE = networkInterface;
     this.MQTT_PORT = mqttPort;
     this.MQTT_IP = mqttIp;
+    this.TEAMCOUNT = teamcount;
     // send
     //final DatagramSocket socket = new DatagramSocket();
     //socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
@@ -138,4 +140,7 @@ public class MulticastClient {
     dc.send(byteBufferSend, new InetSocketAddress(ip, port));
   }
 
+  public ChannelManager getChannelManager() {
+    return cm;
+  }
 }

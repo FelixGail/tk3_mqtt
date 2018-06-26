@@ -6,10 +6,12 @@ import java.util.*;
 
 public class ChannelManager {
   private Map<String, Advertisement> ads = new HashMap<>();
+  private Set<Service> nativeServices = new HashSet<>();
 
   public Set<Service> getServices() {
     Set<Service> services = new HashSet<>();
     getAds().forEach((key, value) -> value.getServiceOptional().ifPresent(services::addAll));
+    services.addAll(nativeServices);
     return services;
   }
 
@@ -20,6 +22,14 @@ public class ChannelManager {
   public void addToChannelList(Advertisement adv) {
     List<Service> espServices = adv.getServices();
     ads.put(adv.getIp(), adv);
+  }
+
+  public void addToNativeServices(Service service) {
+    nativeServices.add(service);
+  }
+
+  public Set<Service> getNativeServices() {
+    return nativeServices;
   }
 
   public void updateChannelList() throws IOException {
