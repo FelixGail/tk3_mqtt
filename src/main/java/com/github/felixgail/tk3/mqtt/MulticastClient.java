@@ -29,7 +29,7 @@ public class MulticastClient {
   private DatagramChannel dc;
   private MembershipKey key;
   private Gson gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
-  private ChannelManager cm = new ChannelManager();
+  private ChannelManager cm;
   private ByteBuffer byteBufferReceive = ByteBuffer.allocate(5000);
   private ByteBuffer byteBufferSend = ByteBuffer.allocate(5000);
 
@@ -42,6 +42,7 @@ public class MulticastClient {
     this.MQTT_PORT = mqttPort;
     this.MQTT_IP = mqttIp;
     this.TEAMCOUNT = teamcount;
+    cm = new ChannelManager(teamcount);
     // send
     //final DatagramSocket socket = new DatagramSocket();
     //socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
@@ -87,7 +88,7 @@ public class MulticastClient {
         // check if there are unavailable devices and remove them
         try {
           while (true) {
-            cm.updateChannelList();
+            cm.updateLists();
             Thread.sleep(5000);
           }
         } catch (IOException | InterruptedException e) {
@@ -101,16 +102,12 @@ public class MulticastClient {
           Advertisement adv = gson.fromJson(packet, Advertisement.class);
 
           Advertisement response = new Advertisement(MQTT_IP, new ArrayList<>(cm.getServices()), MQTT_PORT);
+          Player player  = cm.addToChannelList(adv);
+          response.setPlayerID(player.getId());
+          response.setTeam(player.getTeam());
           sendPackage(response, InetAddress.getByName(adv.getIp()), adv.getPort());
-          for (Entry<String, Advertisement> entry : cm.getAds().entrySet()) {
-            if (!entry.getKey().equals(adv.getIp())) {
-              Advertisement client = entry.getValue();
-              sendPackage(response, InetAddress.getByName(client.getIp()), client.getPort());
-            }
-          }
 
-          // add received channels to channel list
-          cm.addToChannelList(adv);
+
         }
       } while (true);
     } catch (IOException e) {

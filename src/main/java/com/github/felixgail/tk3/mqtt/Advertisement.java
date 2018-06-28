@@ -2,6 +2,7 @@ package com.github.felixgail.tk3.mqtt;
 
 import com.google.gson.annotations.Expose;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,6 +15,11 @@ public class Advertisement {
   private int port;
   @Expose
   private List<Service> services;
+  @Expose
+  private Team team;
+  @Expose
+  @SerializedName("player_id")
+  private String playerID;
 
   public Advertisement(String ip, List<Service> services, int port) {
     this.ip = ip;
@@ -56,5 +62,21 @@ public class Advertisement {
 
   public Optional<List<Service>> getServiceOptional() {
     return Optional.ofNullable(services);
+  }
+
+  public Team getTeam() {
+    return team;
+  }
+
+  public void setTeam(Team team) {
+    this.team = team;
+  }
+
+  public String getPlayerID() {
+    return playerID;
+  }
+
+  public void setPlayerID(String playerID) {
+    this.playerID = playerID;
   }
 }
