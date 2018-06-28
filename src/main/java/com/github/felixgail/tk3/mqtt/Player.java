@@ -9,9 +9,17 @@ public class Player {
   private Team team;
   private String ip;
 
-  private static int nextID = 0;
-  private static int getNextID() {
-    return nextID++;
+  private final static int modulo = 6;
+  private static int nextID = 27;
+  private static String getNextID() {
+    String id = String.format("%d.%d.%d.%d.%d",
+        genIDPart(4), genIDPart(3), genIDPart(2), genIDPart(1), genIDPart(0));
+    nextID++;
+    return id;
+  }
+
+  private static int genIDPart(int exp) {
+    return ((nextID/(int)Math.pow(modulo,exp))%modulo)*1000;
   }
 
   public Player(String id, Team team, String ip) {
@@ -21,7 +29,7 @@ public class Player {
   }
 
   public Player(Team team, String ip) {
-    this(String.valueOf(getNextID()), team, ip);
+    this(getNextID(), team, ip);
   }
 
   public String getId() {
