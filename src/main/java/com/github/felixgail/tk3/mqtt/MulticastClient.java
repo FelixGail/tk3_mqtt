@@ -29,7 +29,7 @@ public class MulticastClient {
   private DatagramChannel dc;
   private MembershipKey key;
   private Gson gson = new GsonBuilder().setLenient().excludeFieldsWithoutExposeAnnotation().create();
-  private ChannelManager cm;
+  private DeviceManager deviceManager;
   private ByteBuffer byteBufferReceive = ByteBuffer.allocate(5000);
   private ByteBuffer byteBufferSend = ByteBuffer.allocate(5000);
 
@@ -42,7 +42,7 @@ public class MulticastClient {
     this.MQTT_PORT = mqttPort;
     this.MQTT_IP = mqttIp;
     this.TEAMCOUNT = teamcount;
-    cm = new ChannelManager(teamcount);
+    deviceManager = new DeviceManager(teamcount);
     // send
     //final DatagramSocket socket = new DatagramSocket();
     //socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
@@ -88,7 +88,7 @@ public class MulticastClient {
         // check if there are unavailable devices and remove them
         try {
           while (true) {
-            cm.updateLists();
+            deviceManager.updateLists();
             Thread.sleep(5000);
           }
         } catch (IOException | InterruptedException e) {
@@ -101,8 +101,8 @@ public class MulticastClient {
         if (packet != null && !packet.isEmpty()) {
           Advertisement adv = gson.fromJson(packet, Advertisement.class);
 
-          Advertisement response = new Advertisement(MQTT_IP, new ArrayList<>(cm.getServices()), MQTT_PORT);
-          Player player  = cm.addToChannelList(adv);
+          Advertisement response = new Advertisement(MQTT_IP, new ArrayList<>(deviceManager.getServices()), MQTT_PORT);
+          Player player  = deviceManager.addToChannelList(adv);
           response.setPlayerID(player.getId());
           response.setTeam(player.getTeam());
           sendPackage(response, InetAddress.getByName(adv.getIp()), adv.getPort());
@@ -137,7 +137,7 @@ public class MulticastClient {
     dc.send(byteBufferSend, new InetSocketAddress(ip, port));
   }
 
-  public ChannelManager getChannelManager() {
-    return cm;
+  public DeviceManager getChannelManager() {
+    return deviceManager;
   }
 }

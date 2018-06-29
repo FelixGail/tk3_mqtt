@@ -5,20 +5,21 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class ChannelManager {
+public class DeviceManager {
   private Map<String, Advertisement> ads = new HashMap<>();
   private Set<Service> nativeServices = new HashSet<>();
   private Map<Team, Map<String, Player>> players;
-  private Random random;
+  private Map<String, Player> beacons;
+  private final Team beaconTeam = new Team("beacon", 0, 0, 0);
 
-  public ChannelManager(int teamCount) {
+  public DeviceManager(int teamCount) {
     players = new HashMap<>(Math.max(teamCount, 1));
-    random = new Random();
+    beacons = new HashMap<>();
     for(int i = 0; i<teamCount; i++) {
       players.put(new Team(String.valueOf(i)), new HashMap<>());
     }
     if(teamCount < 0) {
-      players.put(new Team("-1"), new HashMap<>());
+      players.put(new Team("-1", 255, 255, 255), new HashMap<>());
     }
   }
 
@@ -35,6 +36,14 @@ public class ChannelManager {
 
   public Player addToChannelList(Advertisement adv) {
     ads.put(adv.getIp(), adv);
+    if(adv.isBeacon()) {
+    	if(beacons.containsKey(adv.getIp())) {
+    		return beacons.get(adv.getIp());
+    	}
+    	Player beacon = new Player(beaconTeam, adv.getIp());
+    	beacons.put(adv.getIp(), beacon);
+    	return beacon;
+    }
     Entry<Team, Map<String, Player>> smallestTeam = null;
     for(Entry<Team, Map<String, Player>> entry : players.entrySet()) {
       if(smallestTeam == null || smallestTeam.getValue().size()>entry.getValue().size()) {
@@ -58,15 +67,22 @@ public class ChannelManager {
   }
 
   public void updateLists() throws IOException {
-    Iterator it = ads.keySet().iterator();
+    Iterator<String> it = ads.keySet().iterator();
     System.out.println("Sending ping requests...");
     while (it.hasNext()) {
-      String ip = (String) it.next();
+      String ip = it.next();
 
       InetAddress remote = InetAddress.getByName(ip);
       if (!remote.isReachable(5000)) {
         System.out.printf("Timeout. Removing '%s'\n", ip);
         it.remove();
+        for(Entry<Team, Map<String, Player>> outer : players.entrySet()) {
+          for(Entry<String, Player> inner : outer.getValue().entrySet()) {
+            if(inner.getKey().equals(ip)) {
+              outer.getValue().remove(inner.getKey());
+            }
+          }
+        }
       } else {
         System.out.printf("Answer received from '%s'\n", ip);
       }

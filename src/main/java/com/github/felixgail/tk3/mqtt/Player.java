@@ -9,7 +9,7 @@ public class Player {
   private Team team;
   private String ip;
 
-  private final static int modulo = 6;
+  private final static int modulo = 5;
   private static int nextID = 1;
   private static String getNextID() {
     String id = String.format("%d.%d.%d.%d.%d",
@@ -19,7 +19,7 @@ public class Player {
   }
 
   private static int genIDPart(int exp) {
-    return ((nextID/(int)Math.pow(modulo,exp))%modulo)*1000;
+    return (((nextID/(int)Math.pow(modulo,exp)-1)%modulo)+1)*1000;
   }
 
   public Player(String id, Team team, String ip) {
