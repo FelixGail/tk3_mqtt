@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Advertisement {
 
@@ -20,6 +21,8 @@ public class Advertisement {
   @Expose
   @SerializedName("player_id")
   private String playerID;
+  @Expose
+  private boolean beacon;
 
   public Advertisement(String ip, List<Service> services, int port) {
     this.ip = ip;
@@ -28,7 +31,7 @@ public class Advertisement {
   }
 
   @Override
-  // advertisments are equal if they have the same ip, services and port
+  // Advertisements are equal if they have the same ip, services and port
   public boolean equals(Object other) {
     if (!(other instanceof Advertisement))
       return false;
@@ -79,4 +82,13 @@ public class Advertisement {
   public void setPlayerID(String playerID) {
     this.playerID = playerID;
   }
+
+  public boolean isBeacon() {
+	return beacon;
+  }
+
+  public void setBeacon(boolean beacon) {
+	this.beacon = beacon;
+  }
+  
 }
