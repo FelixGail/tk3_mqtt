@@ -76,6 +76,13 @@ public class DeviceManager {
       if (!remote.isReachable(5000)) {
         System.out.printf("Timeout. Removing '%s'\n", ip);
         it.remove();
+        for(Entry<Team, Map<String, Player>> outer : players.entrySet()) {
+          for(Entry<String, Player> inner : outer.getValue().entrySet()) {
+            if(inner.getKey().equals(ip)) {
+              outer.getValue().remove(inner.getKey());
+            }
+          }
+        }
       } else {
         System.out.printf("Answer received from '%s'\n", ip);
       }
